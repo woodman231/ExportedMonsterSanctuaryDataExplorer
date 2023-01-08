@@ -30,3 +30,5 @@ Here are links to the relevant GitHub pages and npm packages:
 - [@woodman231/exportedmonstersanctuarydatatypes](https://www.npmjs.com/package/@woodman231/exportedmonstersanctuarydatatypes)
 - [GitHub Repository that is a client for interacting with the ExportedMonsterSanctuaryData](https://github.com/woodman231/ExportedMonsterSanctuaryDataClient)
 - [@woodman231/exportedmonstermanctuarydataclient](https://www.npmjs.com/package/@woodman231/exportedmonstermanctuarydataclient) npm package
+
+When contributing and you feel that you have a good enough output rename the out folder to docs.
