@@ -6,6 +6,11 @@ import Layout from "../../components/layout";
 import Link from "next/link";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
 import ExtendedItem from "../../export_model_extensions/extended_item";
+import { WithContext, WebPage, Person, VideoGame } from "schema-dts"
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website'
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants'
 
 interface MonsterDetailsPageProps {
     monsterName: string;
@@ -62,9 +67,37 @@ const MonsterDetailsPage: NextPage<{ monsterDetails: MonsterDetailsPageProps | n
         }
     ];
 
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (monsterDetails) {
+
+        const monsterCharacter: Person = {
+            "@type": "Person",
+            "name": monsterDetails.monsterName,
+            "description": monsterDetails.types.join(' '),
+            "url": websiteURL + '/monsters/' + monsterDetails.monsterName,
+        }
+
+        const monsterSanctuaryVideoGameWithMonsterCharacter: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "character": monsterCharacter
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": monsterDetails.monsterName,
+            "description": `This page lists details for the Monster Sanctuary monster: ${monsterDetails.monsterName}`,
+            "url": websiteURL + '/monsters/' + monsterDetails.monsterName,
+            "about": monsterSanctuaryVideoGameWithMonsterCharacter,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
     return (
-        monsterDetails &&
-        <Layout pageName={monsterDetails.monsterName} parents={parents}>
+        monsterDetails && webPageJSONLD &&
+        <Layout pageName={monsterDetails.monsterName} parents={parents} jsonldObject={webPageJSONLD}>
             <p>This page lists details for the Monster Sanctuary monster: {monsterDetails.monsterName}</p>
             <dl>
                 <dt>Name</dt>
@@ -397,7 +430,7 @@ export const getStaticProps: GetStaticProps<{ monsterDetails: MonsterDetailsPage
                                         itemName: catalystItem.Name,
                                         slugifiedName: extendedCatalystItemDetails.slugifiedName,
                                     }
-                                }                                
+                                }
                             }
                         }
                     }
@@ -424,7 +457,7 @@ export const getStaticProps: GetStaticProps<{ monsterDetails: MonsterDetailsPage
                                                 slugifiedName: extendedCatalystItemDetails.slugifiedName
                                             }
                                         })
-                                    }                                    
+                                    }
                                 }
                             }
                         });

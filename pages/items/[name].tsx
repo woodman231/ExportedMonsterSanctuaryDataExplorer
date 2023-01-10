@@ -6,6 +6,11 @@ import Layout from "../../components/layout";
 import Link from "next/link";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
 import ExtendedItem from "../../export_model_extensions/extended_item";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface ItemDetailsPageProps {
     name: string;
@@ -77,9 +82,29 @@ const ItemDetailsPage: NextPage<{ itemDetails: ItemDetailsPageProps }> = ({ item
         }
     ];
 
+    const monsterSanctuaryVideoGameWithBuffAttribute: VideoGame = {
+        ...MonsterSanctuaryVideoGame,
+        "gameItem": {
+            "@type": "Thing",
+            "name": itemDetails.name,
+            "description": itemDetails.description
+        }
+    }
+
+    const webPageJSONLD: WithContext<WebPage> = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "name": itemDetails.name,
+        "description": `This page lists details for the ${itemDetails.name} Item in the Monster Sanctuary video game.`,
+        "url": websiteURL + '/items/' + itemDetails.name,
+        "about": monsterSanctuaryVideoGameWithBuffAttribute,
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+    }
+
     return (
         <>
-            <Layout pageName={itemDetails.name} parents={parents}>
+            <Layout pageName={itemDetails.name} parents={parents} jsonldObject={webPageJSONLD}>
                 <p>This page lists details for the {itemDetails.name} item in the Monster Sanctuary Video Game.</p>
                 <dl>
                     <dt>Name</dt>
@@ -374,7 +399,7 @@ const ItemDetailsPage: NextPage<{ itemDetails: ItemDetailsPageProps }> = ({ item
                                 <ul>
                                     {
                                         itemDetails.relatedItems.map((relatedItem, index) => {
-                                            return(
+                                            return (
                                                 <li key={index}>
                                                     <Link href={'/items/' + relatedItem.slugifiedName}>{relatedItem.name}</Link>
                                                 </li>
@@ -450,7 +475,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
 
     let craftBoxDetails: ExportedMonsterSanctuaryDataTypes.Item | null = null;
 
-    let allItemsAsKeyValuePairs: {[key: number]: ExtendedItem} = {};
+    let allItemsAsKeyValuePairs: { [key: number]: ExtendedItem } = {};
 
     // Create a dictionary of all items as key value pairs to be referenced later
     // Grab detals abouut special items that could contain items to relate them back accordingly
@@ -519,9 +544,9 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
     if (craftBoxDetails) {
         allLootBoxes.push(new ExtendedItem(craftBoxDetails));
     }
-    
+
     const allMonsterObjects = await dataClient.monstersClient.getAllObjectsInDirectoryAsync();
-    let allMonsterKeyValuePairs: {[key: number]: ExtendedMonster} = {};
+    let allMonsterKeyValuePairs: { [key: number]: ExtendedMonster } = {};
 
     allMonsterObjects.forEach((monster) => {
         const extendedMonsterDetails = new ExtendedMonster(monster);
@@ -537,7 +562,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                 results.name = extendedItemObject.originalItemDetails.Name;
                 results.description = extendedItemObject.originalItemDetails.Description;
                 results.price = extendedItemObject.originalItemDetails.Price;
-                
+
                 allMonsterObjects.forEach((monster) => {
                     monster.RewardsCommon.forEach((reward) => {
                         if (reward.ID === extendedItemObject.originalItemDetails.ID) {
@@ -581,7 +606,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                             }
                         }
 
-                        if (currentMonsterIsABaseMonster) {                            
+                        if (currentMonsterIsABaseMonster) {
                             const newMonsterDetails = allMonsterKeyValuePairs[extendedItemObject.originalItemDetails.CatalystProperties.EvolveMonster];
 
                             if (newMonsterDetails) {
@@ -603,7 +628,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                             }
                         }
                     }
-                });                
+                });
 
                 allLootBoxes.forEach((lootBox) => {
                     if (lootBox.containsLootByItemObject(extendedItemObject.originalItemDetails)) {
@@ -623,7 +648,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                 });
 
                 if (extendedItemObject.originalItemDetails.LootBoxProperties) {
-                    extendedItemObject.originalItemDetails.LootBoxProperties.Loot.forEach((lootItem) => {                        
+                    extendedItemObject.originalItemDetails.LootBoxProperties.Loot.forEach((lootItem) => {
                         const lootItemProperties = allItemsAsKeyValuePairs[lootItem];
                         if (lootItemProperties) {
                             if (results.contains) {
@@ -640,10 +665,10 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                             }
                         }
 
-                    });                    
+                    });
 
                     allLootBoxes.forEach((lootBox) => {
-                        if(results.relatedItems) {
+                        if (results.relatedItems) {
                             results.relatedItems.push({
                                 name: lootBox.originalItemDetails.Name,
                                 slugifiedName: lootBox.slugifiedName,
@@ -653,7 +678,7 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                             results.relatedItems.push({
                                 name: lootBox.originalItemDetails.Name,
                                 slugifiedName: lootBox.slugifiedName,
-                            });                            
+                            });
                         }
                     })
                 }
@@ -694,12 +719,12 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                     });
                 }
 
-                if(extendedItemObject.originalItemDetails.FoodProperties) {
-                    if(extendedItemObject.originalItemDetails.FoodProperties.PrecedingFood) {                        
+                if (extendedItemObject.originalItemDetails.FoodProperties) {
+                    if (extendedItemObject.originalItemDetails.FoodProperties.PrecedingFood) {
                         const proceedingFoodDetails = allItemsAsKeyValuePairs[extendedItemObject.originalItemDetails.FoodProperties.PrecedingFood];
 
-                        if(proceedingFoodDetails) {                            
-                            if(results.relatedItems) {
+                        if (proceedingFoodDetails) {
+                            if (results.relatedItems) {
                                 results.relatedItems.push({
                                     name: proceedingFoodDetails.originalItemDetails.Name,
                                     slugifiedName: proceedingFoodDetails.slugifiedName
@@ -708,16 +733,16 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                                 results.relatedItems = [];
                                 results.relatedItems.push({
                                     name: proceedingFoodDetails.originalItemDetails.Name,
-                                    slugifiedName: proceedingFoodDetails.slugifiedName                                
+                                    slugifiedName: proceedingFoodDetails.slugifiedName
                                 });
                             }
-                        }                        
+                        }
                     }
 
-                    if(extendedItemObject.originalItemDetails.FoodProperties.SubsequentFood) {                        
+                    if (extendedItemObject.originalItemDetails.FoodProperties.SubsequentFood) {
                         const subsequentFoodDetails = allItemsAsKeyValuePairs[extendedItemObject.originalItemDetails.FoodProperties.SubsequentFood];
-                        if(subsequentFoodDetails) {
-                            if(results.relatedItems) {
+                        if (subsequentFoodDetails) {
+                            if (results.relatedItems) {
                                 results.relatedItems.push({
                                     name: subsequentFoodDetails.originalItemDetails.Name,
                                     slugifiedName: subsequentFoodDetails.slugifiedName,
@@ -751,9 +776,9 @@ export const getStaticProps: GetStaticProps<{ itemDetails: ItemDetailsPageProps 
                     results.shieldBonus = extendedItemObject.originalItemDetails.EquipmentProperties.ShieldBonus;
                     results.dodgeChance = extendedItemObject.originalItemDetails.EquipmentProperties.DodgeChance;
 
-                    if (extendedItemObject.originalItemDetails.EquipmentProperties.UpgradesTo) {                        
+                    if (extendedItemObject.originalItemDetails.EquipmentProperties.UpgradesTo) {
                         const upgradeItemDetails = allItemsAsKeyValuePairs[extendedItemObject.originalItemDetails.EquipmentProperties.UpgradesTo];
-                        if (upgradeItemDetails) {                            
+                        if (upgradeItemDetails) {
                             results.upgradesTo = {
                                 name: upgradeItemDetails.originalItemDetails.Name,
                                 slugifiedName: upgradeItemDetails.slugifiedName

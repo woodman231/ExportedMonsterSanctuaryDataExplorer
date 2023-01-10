@@ -2,6 +2,11 @@ import ExportedMonsterSanctuaryDataClient from "@woodman231/exportedmonstermanct
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Link from "next/link";
 import Layout, { ParentPage } from "../../components/layout";
+import { WithContext, WebPage, VideoGame, CollectionPage } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface ExploreAbilityDetailsPageProps {
     name: string;
@@ -17,9 +22,29 @@ const ExploreAbilityDetailsPage: NextPage<{ exploreAbilityDetails: ExploreAbilit
         }
     ];
 
+    const monsterSanctuaryVideoGameWithElementAttribute: VideoGame = {
+        ...MonsterSanctuaryVideoGame,
+        "characterAttribute": {
+            "@type": "Thing",
+            "name": `${exploreAbilityDetails.name} (Explore Ability)`,
+            "description": exploreAbilityDetails.description,
+        }
+    }
+
+    const webPageJSONLD: WithContext<WebPage> = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "name": exploreAbilityDetails.name,
+        "description": `This page lists details for the ${exploreAbilityDetails.name} exploration ability in the Monster Sanctuary video game.`,
+        "url": websiteURL + '/explore_abilities/' + exploreAbilityDetails.name,
+        "about": monsterSanctuaryVideoGameWithElementAttribute,
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+    }
+
     return (
         <>
-            <Layout pageName={exploreAbilityDetails.name} parents={parents}>
+            <Layout pageName={exploreAbilityDetails.name} parents={parents} jsonldObject={webPageJSONLD}>
                 <p>This page lists details for the {exploreAbilityDetails.name} exploration ability in the Monster Sanctuary video game.</p>
                 <dl>
                     <dt>Name</dt>

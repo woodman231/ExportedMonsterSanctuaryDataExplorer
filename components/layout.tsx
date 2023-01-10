@@ -4,10 +4,12 @@ import SiteNavbar from './navbar'
 import Disclaimer from './disclaimer'
 import Head from 'next/head'
 import Link from 'next/link';
+import { Thing, WithContext } from 'schema-dts';
 
 type Props = {
     pageName: string
     parents?: ParentPage[]
+    jsonldObject?: WithContext<Thing>
     children: React.ReactNode
 }
 
@@ -18,12 +20,19 @@ export type ParentPage = {
 
 const siteName = "Monster Sanctuary Data Explorer"
 
-const Layout = ({ pageName, parents, children }: Props) => {
+const Layout = ({ pageName, parents, jsonldObject, children }: Props) => {
     return (
         <>
             <Container className="p-3">
                 <Head>
                     <title>{`${siteName} | ${pageName}`}</title>
+                    {
+                        jsonldObject &&
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonldObject) }}
+                        />
+                    }
                 </Head>
                 <SiteNavbar />
                 <Container>

@@ -2,11 +2,37 @@ import ExportedMonsterSanctuaryDataClient from "@woodman231/exportedmonstermanct
 import { GetStaticProps, NextPage } from "next";
 import Link from "next/link";
 import Layout from "../../components/layout";
+import { WithContext, CollectionPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { websiteURL } from '../../constants';
 
 const ElementsHomePage: NextPage<{ elementNames: string[] }> = ({ elementNames }) => {
+
+    const monsterSanctuaryVideoGameWithElementsAttribute: VideoGame = {
+        ...MonsterSanctuaryVideoGame,
+        "characterAttribute": {
+            "@type": "Thing",
+            "name": "Elements",
+            "description": "Elements refer to various natural elements which a monster may resist, be weak to, physically attack, or magically attack with."
+        }
+    }
+
+    const webPageJSONLD: WithContext<CollectionPage> = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "name": "Elements",
+        "description": "This page contains a list of Elements that are available in the Monster Sanctuary video game.",
+        "url": websiteURL + '/elements',
+        "about": monsterSanctuaryVideoGameWithElementsAttribute,
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite,
+    }
+
     return (
         <>
-            <Layout pageName="Elements">
+            <Layout pageName="Elements" jsonldObject={webPageJSONLD}>
                 <p>This page contains a list of elements available in the Monster Sanctuary video game.</p>
                 <ul>
                     {
@@ -24,7 +50,7 @@ const ElementsHomePage: NextPage<{ elementNames: string[] }> = ({ elementNames }
     )
 }
 
-export const getStaticProps : GetStaticProps<{elementNames: string[]}> = async (context) => {
+export const getStaticProps: GetStaticProps<{ elementNames: string[] }> = async (context) => {
     let results: string[] = [];
 
     const dataClient = new ExportedMonsterSanctuaryDataClient();
@@ -42,7 +68,7 @@ export const getStaticProps : GetStaticProps<{elementNames: string[]}> = async (
         props: {
             elementNames: results
         }
-    }    
+    }
 }
 
 export default ElementsHomePage;

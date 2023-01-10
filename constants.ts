@@ -1,0 +1,1 @@
+export const websiteURL = 'https://woodman231.github.io/ExportedMonsterSanctuaryDataExplorer';

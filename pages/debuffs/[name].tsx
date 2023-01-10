@@ -4,6 +4,11 @@ import Layout, { ParentPage } from "../../components/layout";
 import SkillDetailsWithMonstersListComponent from "../../components/skill_details_with_monsters_list";
 import { SkillDetailsWithMonstersList } from "../../component_view_models/skill_details_wtih_monsters_list";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface DebuffTypeDetailsPageProps {
     debuffName: string;
@@ -19,11 +24,36 @@ const DebuffDetailsPage: NextPage<{ debuffDetails: DebuffTypeDetailsPageProps | 
         }
     ];
 
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (debuffDetails) {
+
+        const monsterSanctuaryVideoGameWithDebuffAttribute: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "characterAttribute": {
+                "@type": "Thing",
+                "name": `${debuffDetails.debuffName} (Debuff)`,
+                "description": debuffDetails.debuffDescription
+            }
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": debuffDetails.debuffName,
+            "description": `This page lists details for the ${debuffDetails.debuffName} Buff in the Monster Sanctuary video game.`,
+            "url": websiteURL + '/debuffs/' + debuffDetails.debuffName,
+            "about": monsterSanctuaryVideoGameWithDebuffAttribute,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
     return (
         <>
             {
-                debuffDetails &&
-                <Layout pageName={debuffDetails.debuffName} parents={parents}>
+                debuffDetails && webPageJSONLD && 
+                <Layout pageName={debuffDetails.debuffName} parents={parents} jsonldObject={webPageJSONLD}>
                     <p>This page lists details for the {debuffDetails.debuffName} Debuff in the Monster Sanctuary video game.</p>
                     <dl>
                         <dt>Name</dt>
