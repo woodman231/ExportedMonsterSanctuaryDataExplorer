@@ -3,6 +3,11 @@ import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Link from "next/link";
 import Layout, { ParentPage } from "../../components/layout";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface ElementDetailsPageProps {
     elementName: string;
@@ -19,12 +24,37 @@ const ElementDetailsPage: NextPage<{ elementDetails: ElementDetailsPageProps | n
             url: "/elements"
         }
     ];
-        
+
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (elementDetails) {
+
+        const monsterSanctuaryVideoGameWithElementAttribute: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "characterAttribute": {
+                "@type": "Thing",
+                "name": `${elementDetails.elementName} (Element)`,
+                "description": `The ${elementDetails.elementName} element in the Monster Sanctuary video game.`,
+            }
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": elementDetails.elementName,
+            "description": `This page lists details for the ${elementDetails.elementName} element in the Monster Sanctuary video game.`,
+            "url": websiteURL + '/elements/' + elementDetails.elementName,
+            "about": monsterSanctuaryVideoGameWithElementAttribute,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
     return (
         <>
             {
-                elementDetails &&
-                <Layout pageName={'Element Details - ' + elementDetails.elementName} parents={parents}>
+                elementDetails && webPageJSONLD &&
+                <Layout pageName={'Element Details - ' + elementDetails.elementName} parents={parents} jsonldObject={webPageJSONLD}>
                     <p>This page lists details for the {elementDetails.elementName} element in the Monster Sanctuary video game.</p>
                     <dl>
                         <dt>Name</dt>
@@ -121,7 +151,7 @@ export const getStaticPaths: GetStaticPaths<{ name: string }> = async (context) 
 }
 
 export const getStaticProps: GetStaticProps<{ elementDetails: ElementDetailsPageProps | null }, { name: string }> = async (context) => {
-    var results : ElementDetailsPageProps | null = null;    
+    var results: ElementDetailsPageProps | null = null;
 
     if (context.params) {
         if (context.params.name) {
@@ -146,41 +176,41 @@ export const getStaticProps: GetStaticProps<{ elementDetails: ElementDetailsPage
                                 const allMonsters = await dataClient.monstersClient.getAllObjectsInDirectoryAsync();
                                 allMonsters.forEach((monster) => {
                                     const extendedMonster = new ExtendedMonster(monster);
-                                    
-                                    if(extendedMonster.canResistElement(keyValueObject.Value)) {
-                                        if(results) {
-                                            if(!results.monstersThatResistThisElement.includes(monster.Name)) {
+
+                                    if (extendedMonster.canResistElement(keyValueObject.Value)) {
+                                        if (results) {
+                                            if (!results.monstersThatResistThisElement.includes(monster.Name)) {
                                                 results.monstersThatResistThisElement.push(monster.Name);
                                             }
                                         }
                                     }
 
-                                    if(extendedMonster.isWeakAgainstElement(keyValueObject.Value)) {
-                                        if(results) {
-                                            if(!results.monstersThatAreWeakAgainstThisElement.includes(monster.Name)) {
+                                    if (extendedMonster.isWeakAgainstElement(keyValueObject.Value)) {
+                                        if (results) {
+                                            if (!results.monstersThatAreWeakAgainstThisElement.includes(monster.Name)) {
                                                 results.monstersThatAreWeakAgainstThisElement.push(monster.Name);
                                             }
                                         }
                                     }
 
-                                    if(extendedMonster.canPhysicallyAttackWithElement(keyValueObject.Value)) {
-                                        if(results) {
-                                            if(!results.monstersThatPhysicallyAttackWithThisElement.includes(monster.Name)) {
+                                    if (extendedMonster.canPhysicallyAttackWithElement(keyValueObject.Value)) {
+                                        if (results) {
+                                            if (!results.monstersThatPhysicallyAttackWithThisElement.includes(monster.Name)) {
                                                 results.monstersThatPhysicallyAttackWithThisElement.push(monster.Name);
                                             }
                                         }
                                     }
 
-                                    if(extendedMonster.canMagicallyAttackWithElement(keyValueObject.Value)) {
-                                        if(results) {
-                                            if(!results.monstersThatMagicallyAttackWithThisElement.includes(monster.Name)) {
+                                    if (extendedMonster.canMagicallyAttackWithElement(keyValueObject.Value)) {
+                                        if (results) {
+                                            if (!results.monstersThatMagicallyAttackWithThisElement.includes(monster.Name)) {
                                                 results.monstersThatMagicallyAttackWithThisElement.push(monster.Name);
                                             }
                                         }
                                     }
                                 })
 
-                                if(results) {
+                                if (results) {
                                     results.monstersThatAreWeakAgainstThisElement = results.monstersThatAreWeakAgainstThisElement.sort();
                                     results.monstersThatResistThisElement = results.monstersThatResistThisElement.sort();
                                     results.monstersThatPhysicallyAttackWithThisElement = results.monstersThatPhysicallyAttackWithThisElement.sort();
@@ -190,7 +220,7 @@ export const getStaticProps: GetStaticProps<{ elementDetails: ElementDetailsPage
                         }
                     });
 
-                    await Promise.all(readAllEnumObjectPromises);                    
+                    await Promise.all(readAllEnumObjectPromises);
                 }
             }
         }

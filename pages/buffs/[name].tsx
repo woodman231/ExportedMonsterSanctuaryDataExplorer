@@ -4,6 +4,11 @@ import Layout, { ParentPage } from "../../components/layout";
 import SkillDetailsWithMonstersListComponent from "../../components/skill_details_with_monsters_list";
 import { SkillDetailsWithMonstersList } from "../../component_view_models/skill_details_wtih_monsters_list";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface BuffTypeDetailsPageProps {
     buffName: string;
@@ -19,11 +24,36 @@ const BuffDetailsPage: NextPage<{ buffDetails: BuffTypeDetailsPageProps | null }
         }
     ];
 
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (buffDetails) {
+
+        const monsterSanctuaryVideoGameWithBuffAttribute: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "characterAttribute": {
+                "@type": "Thing",
+                "name": `${buffDetails.buffName} (Buff)`,
+                "description": buffDetails.buffDescription
+            }
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": buffDetails.buffName,
+            "description": `This page lists details for the ${buffDetails.buffName} Buff in the Monster Sanctuary video game.`,
+            "url": websiteURL + '/buffs/' + buffDetails.buffName,
+            "about": monsterSanctuaryVideoGameWithBuffAttribute,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
     return (
         <>
             {
-                buffDetails &&
-                <Layout pageName={buffDetails.buffName} parents={parents}>
+                buffDetails && webPageJSONLD &&
+                <Layout pageName={buffDetails.buffName} parents={parents} jsonldObject={webPageJSONLD}>
                     <p>This page lists details for the {buffDetails.buffName} Buff in the Monster Sanctuary video game.</p>
                     <dl>
                         <dt>Name</dt>
@@ -96,7 +126,7 @@ export const getStaticProps: GetStaticProps<{ buffDetails: BuffTypeDetailsPagePr
 
                             const buffTypeObject = await dataClient.buffsClient.getObjectByNameAsync(buffTypeName);
 
-                            if(buffTypeObject) {
+                            if (buffTypeObject) {
                                 buffTypeDescription = buffTypeObject.Description;
                             }
 

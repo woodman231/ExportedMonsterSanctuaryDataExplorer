@@ -1,15 +1,38 @@
 import ExportedMonsterSanctuaryDataClient from "@woodman231/exportedmonstermanctuarydataclient";
-import { ExportedMonsterSanctuaryDataTypes } from "@woodman231/exportedmonstersanctuarydatatypes";
-import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { ParentPage } from "../../components/layout";
+import { GetStaticProps, NextPage } from "next";
 import Layout from "../../components/layout";
 import Link from "next/link";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, CollectionPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { websiteURL } from '../../constants';
 
 const SkillsHomePage: NextPage<{ skillNames: string[] }> = ({ skillNames }) => {
+    const monsterSanctuaryVideoGameWithSkillsAttribute: VideoGame = {
+        ...MonsterSanctuaryVideoGame,
+        "characterAttribute": {
+            "@type": "Thing",
+            "name": "Skills",
+            "description": "Skills are various actions that monsters can learn in the Monster Sanctuary video game."
+        }
+    }
+
+    const webPageJSONLD: WithContext<CollectionPage> = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "name": "Skills",
+        "description": "This page lists the skills that are available in the Monster Sanctuary video game.",
+        "url": websiteURL + '/skills',
+        "about": monsterSanctuaryVideoGameWithSkillsAttribute,
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite,
+    }
+
     return (
         <>
-            <Layout pageName="Basic Skills List">
+            <Layout pageName="Basic Skills List" jsonldObject={webPageJSONLD}>
                 <p>This page lists the skills that are available in the Monster Sanctuary video game.</p>
                 <ul>
                     {

@@ -3,6 +3,11 @@ import Link from "next/link"
 import Layout from "../../components/layout"
 import ExportedMonsterSanctuaryDataClient from "@woodman231/exportedmonstermanctuarydataclient"
 import ExtendedItem from "../../export_model_extensions/extended_item"
+import { WithContext, CollectionPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { websiteURL } from '../../constants';
 
 interface ItemsListHomePageProps {
     items: ItemProps[]
@@ -14,9 +19,30 @@ interface ItemProps {
 }
 
 const ItemsListHomePage: NextPage<ItemsListHomePageProps> = ({ items }) => {
+
+    const monsterSanctuaryVideoGameWithItemsAttribute: VideoGame = {
+        ...MonsterSanctuaryVideoGame,
+        "characterAttribute": {
+            "@type": "Thing",
+            "name": "Items",
+            "description": "Items are objects that can be used either by your monsters, on your monsters, or for your hero."
+        }
+    }
+
+    const webPageJSONLD: WithContext<CollectionPage> = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "name": "Items",
+        "description": "This page contains a basic list of the items available in the Monster Sanctuary video game.",
+        "url": websiteURL + '/items',
+        "about": monsterSanctuaryVideoGameWithItemsAttribute,
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite,
+    }
+
     return (
         <>
-            <Layout pageName="Items">
+            <Layout pageName="Items" jsonldObject={webPageJSONLD}>
                 <p>This page contains a basic list of the items available in the Monster Sanctuary video game.</p>
                 <ul>
                     {

@@ -7,8 +7,13 @@ import SkillDetailsWithMonstersListComponent from "../../components/skill_detail
 import ExportedMonsterSanctuaryDataClient from "@woodman231/exportedmonstermanctuarydataclient";
 import { SkillDetailsWithMonstersList } from "../../component_view_models/skill_details_wtih_monsters_list";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
-const MonsterTypeDetailsPageComponent: NextPage<{ monsterTypePageDetails: MonsterTypeDetailsPage | null }> = ({ monsterTypePageDetails: monsterTypeDetails }) => {
+const MonsterTypeDetailsPageComponent: NextPage<{ monsterTypePageDetails: MonsterTypeDetailsPage | null }> = ({ monsterTypePageDetails }) => {
     const parents: ParentPage[] = [
         {
             pageName: "Monster Types",
@@ -16,21 +21,46 @@ const MonsterTypeDetailsPageComponent: NextPage<{ monsterTypePageDetails: Monste
         }
     ];
 
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (monsterTypePageDetails) {
+        const monsterSanctuaryVideoGameWithElementAttribute: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "characterAttribute": {
+                "@type": "Thing",
+                "name": `${monsterTypePageDetails.monsterTypeName} (Monster Type)`,
+                "description": `The ${monsterTypePageDetails.monsterTypeName} monster type`,
+            }
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": monsterTypePageDetails.monsterTypeName,
+            "description": `This page lists details for the ${monsterTypePageDetails.monsterTypeName} monster type in the Monster Sanctuary video game.`,
+            "url": websiteURL + '/monster_types/' + monsterTypePageDetails.monsterTypeName,
+            "about": monsterSanctuaryVideoGameWithElementAttribute,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
+
     return (
         <>
             {
-                monsterTypeDetails &&
-                <Layout pageName={monsterTypeDetails.monsterTypeName} parents={parents}>
-                    <p>This page gives details for the Monster Sanctuary Monster Type of {monsterTypeDetails.monsterTypeName}</p>
+                monsterTypePageDetails && webPageJSONLD &&
+                <Layout pageName={monsterTypePageDetails.monsterTypeName} parents={parents} jsonldObject={webPageJSONLD}>
+                    <p>This page lists details for the {monsterTypePageDetails.monsterTypeName} monster type in the Monster Sanctuary video game.</p>
                     <dl>
                         <dt>Name</dt>
-                        <dd>{monsterTypeDetails.monsterTypeName}</dd>
+                        <dd>{monsterTypePageDetails.monsterTypeName}</dd>
 
                         <dt>Monsters</dt>
                         <dd>
                             <ul>
                                 {
-                                    monsterTypeDetails.monsters.map((monster) => {
+                                    monsterTypePageDetails.monsters.map((monster) => {
                                         return (
                                             <li key={monster}>
                                                 <Link href={'/monsters/' + monster}>{monster}</Link>
@@ -44,7 +74,7 @@ const MonsterTypeDetailsPageComponent: NextPage<{ monsterTypePageDetails: Monste
                         <dt>Skills</dt>
                         <dd>
                             {
-                                monsterTypeDetails.skillDetailsWithMonstersList.map((skill) => {
+                                monsterTypePageDetails.skillDetailsWithMonstersList.map((skill) => {
                                     return <SkillDetailsWithMonstersListComponent key={skill.skillName} skillDetailsWithMonstersList={skill} />
                                 })
                             }
@@ -132,7 +162,7 @@ export const getStaticProps: GetStaticProps<{ monsterTypePageDetails: MonsterTyp
                                             indexOfSkill = currentSkillsLength;
                                         }
 
-                                        skills[indexOfSkill].monsters.push(monster.Name);                                        
+                                        skills[indexOfSkill].monsters.push(monster.Name);
                                     }
                                 })
                             })

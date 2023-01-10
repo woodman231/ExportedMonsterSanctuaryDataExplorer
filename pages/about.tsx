@@ -1,9 +1,25 @@
 import Layout from "../components/layout";
+import {WithContext, AboutPage as AboutPageSchema} from 'schema-dts'
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../json-ld_objects/exportedmonstersanctuarydataexplorer_website'
+import { ExportedMonsterSanctuaryDataExplorerContributors } from '../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org'
+import { websiteURL } from '../constants'
 
 const AboutPage = () => {
+
+    const webPageJSONLD: WithContext<AboutPageSchema> = {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "author": ExportedMonsterSanctuaryDataExplorerContributors,
+        "about": ExportedMonsterSanctuaryDataExplorerWebsite,
+        "url": websiteURL + '/about',
+        "name": "About the ExportedMonsterSanctuaryDataExplorer site",
+        "description": "This page gives details regarding the ExportedMonsterSanctuaryDataExplorer site.",
+        "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+    }
+
     return (
         <>
-            <Layout pageName="About">
+            <Layout pageName="About" jsonldObject={webPageJSONLD}>
                 <p>
                     This site was created by a fan of the game. I am not associated with <a href="https://monster-sanctuary.com/press/index.php">Moi Rai games</a> the developer, nor <a href="https://www.team17.com/">Team 17</a> the publisher.
                 </p>

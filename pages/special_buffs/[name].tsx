@@ -4,6 +4,11 @@ import Layout, { ParentPage } from "../../components/layout";
 import { SkillDetailsWithMonstersList } from "../../component_view_models/skill_details_wtih_monsters_list";
 import SkillDetailsWithMonstersListComponent from "../../components/skill_details_with_monsters_list";
 import ExtendedMonster from "../../export_model_extensions/extended_monster";
+import { WithContext, WebPage, VideoGame } from "schema-dts";
+import { ExportedMonsterSanctuaryDataExplorerWebsite } from '../../json-ld_objects/exportedmonstersanctuarydataexplorer_website';
+import { ExportedMonsterSanctuaryDataExplorerContributors } from "../../json-ld_objects/exportedmonstersanctuarydataexplorer_contributors_org";
+import { MonsterSanctuaryVideoGame } from "../../json-ld_objects/monster_sanctuary_video_game";
+import { websiteURL } from '../../constants';
 
 interface SpecialBuffDetailsPageProps {
     name: string;
@@ -19,11 +24,36 @@ const SpecialBuffDetailsPage: NextPage<{ specialBuffDetails: SpecialBuffDetailsP
         }
     ];
 
+    let webPageJSONLD: WithContext<WebPage> | null = null;
+
+    if (specialBuffDetails) {
+
+        const monsterSanctuaryVideoGameWithDebuffAttribute: VideoGame = {
+            ...MonsterSanctuaryVideoGame,
+            "characterAttribute": {
+                "@type": "Thing",
+                "name": `${specialBuffDetails.name} (Special Buff)`,
+                "description": specialBuffDetails.description
+            }
+        }
+
+        webPageJSONLD = {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "author": ExportedMonsterSanctuaryDataExplorerContributors,
+            "name": specialBuffDetails.name,
+            "description": `This page lists details for the ${specialBuffDetails.name} Special Buff in the Monster Sanctuary video game.`,
+            "url": websiteURL + '/special_buffs/' + specialBuffDetails.name,
+            "about": monsterSanctuaryVideoGameWithDebuffAttribute,
+            "isPartOf": ExportedMonsterSanctuaryDataExplorerWebsite
+        }
+    }
+
     return (
         <>
             {
-                specialBuffDetails &&
-                <Layout pageName={specialBuffDetails.name} parents={parents}>
+                specialBuffDetails && webPageJSONLD && 
+                <Layout pageName={specialBuffDetails.name} parents={parents} jsonldObject={webPageJSONLD}>
                     <p>This page lists the details for the {specialBuffDetails.name} Special Buff in the Monster Sanctuary video game.</p>
                     <dl>
                         <dt>Name</dt>
