@@ -32,3 +32,5 @@ Here are links to the relevant GitHub pages and npm packages:
 - [@woodman231/exportedmonstermanctuarydataclient](https://www.npmjs.com/package/@woodman231/exportedmonstermanctuarydataclient) npm package
 
 When contributing and you feel that you have a good enough output rename the out folder to docs.
+
+DISCLAIMER: This package was made by a fan of the game. I am not associated with [Moi Rai Games](https://monster-sanctuary.com/) the developer, nor [Team 17](https://www.team17.com/) the distributor.
